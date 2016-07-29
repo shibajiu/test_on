@@ -205,7 +205,8 @@ static const char* vertexshadersource1 =
 "out vec3 Texcoords;\n"
 
 "void main(){\n"
-"gl_Position = projection * view * vec4(vertexPosition_modelspace,1.0f);\n"
+"vec4 pos=projection * view * vec4(vertexPosition_modelspace,1.0f);\n"
+"gl_Position = pos.xyww;\n"
 "Texcoords=vertexPosition_modelspace;\n"
 "}"
 ;
@@ -446,6 +447,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	//system("pause");
 
+		glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(window)){
 		GLfloat currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -460,7 +462,6 @@ int _tmain(int argc, _TCHAR* argv[])
 
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 		glClearColor(1, 1, 0, 1);
-		glEnable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(gl.shaderprogram);
@@ -475,27 +476,14 @@ int _tmain(int argc, _TCHAR* argv[])
 		glUseProgram(0);
 		//glEnable(GL_DEPTH_TEST);
 
-		glClearColor(1.0f, 1.0f, .0f, 1.0f); // Set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);;
-		glDepthMask(GL_FALSE);
-		glBindVertexArray(sb_vao);
-		glUseProgram(glsb.shaderprogram);
-		glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "projection"), 1, GL_FALSE, (float*)&projection);
-		glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "view"), 1, GL_FALSE, (float*)&mat4(mat3(view)));
-		glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "model"), 1, GL_FALSE, (float*)&model);
-		glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "transform"), 1, GL_FALSE, &transform[0][0]);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, skybox);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-		glUseProgram(0);
+	
 
-
-		//glDepthMask(GL_TRUE);
 		//glDisable(GL_DEPTH_TEST);
 		//glClearColor(1, 0, 0, 1);
-		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_DEPTH_TEST);
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(1.0f, 1.0f, .0f, 1.0f); // Set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		glUseProgram(glo.shaderprogram);
 		model = translate(model,vec3(0,0,-5));
@@ -508,6 +496,22 @@ int _tmain(int argc, _TCHAR* argv[])
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 		glUseProgram(0);
+
+		glDepthFunc(GL_LEQUAL);
+		glBindVertexArray(sb_vao);
+		glUseProgram(glsb.shaderprogram);
+		glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "projection"), 1, GL_FALSE, (float*)&projection);
+		glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "view"), 1, GL_FALSE, (float*)&mat4(mat3(view)));
+		glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "model"), 1, GL_FALSE, (float*)&model);
+		glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "transform"), 1, GL_FALSE, &transform[0][0]);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skybox);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+		glUseProgram(0);
+		glDepthFunc(GL_LESS);
+
+
 		glfwPollEvents();
 		glfwSwapBuffers(window);
 	}
