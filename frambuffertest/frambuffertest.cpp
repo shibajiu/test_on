@@ -279,24 +279,10 @@ int _tmain(int argc, _TCHAR* argv[])
 		SOIL_FLAG_MIPMAPS
 		);
 
-	/*GLuint single_tex_cube = SOIL_load_OGL_cubemap
-		(
-		"skybox\\left.jpg",
-		"skybox\\right.jpg",
-		"skybox\\top.jpg",
-		"skybox\\bottom.jpg",
-		"skybox\\back.jpg",
-		"skybox\\front.jpg",
-		SOIL_LOAD_RGB,
-		SOIL_CREATE_NEW_ID,
-		SOIL_FLAG_MIPMAPS
-		);
-	if (single_tex_cube)
-		printf("texture loaded\n");
-	else
-		printf("fail to load texture\n");*/
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+
 
 	GLuint sb_vao, sb_vbo;
 	glGenVertexArrays(1, &sb_vao);
@@ -461,7 +447,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		model = mat4(1);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-		glClearColor(1, 1, 0, 1);
+		glClearColor(1, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(gl.shaderprogram);
@@ -484,33 +470,60 @@ int _tmain(int argc, _TCHAR* argv[])
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(1.0f, 1.0f, .0f, 1.0f); // Set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-		glUseProgram(glo.shaderprogram);
 		model = translate(model,vec3(0,0,-5));
-		glBindVertexArray(quadVAO);
-		glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "projection"), 1, GL_FALSE, (float*)&projection);
-		glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "view"), 1, GL_FALSE, (float*)&view);
+		
+		//glUseProgram(shaderprogram2);
+		//glBindVertexArray(quadVAO);
+		//glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "projection"), 1, GL_FALSE, (float*)&projection);
+		//glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "view"), 1, GL_FALSE, (float*)&view);
+		//glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "model"), 1, GL_FALSE, (float*)&model);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, tex);	// Use the color attachment texture as the texture of the quad plane
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		//glBindVertexArray(0);
+		//glUseProgram(0);
+
+		//glDepthFunc(GL_LEQUAL);
+		//glBindVertexArray(sb_vao);
+		//glUseProgram(glsb.shaderprogram);
+		//glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "projection"), 1, GL_FALSE, (float*)&projection);
+		//glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "view"), 1, GL_FALSE, (float*)&mat4(mat3(view)));
+		//glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "model"), 1, GL_FALSE, (float*)&model);
+		//glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "transform"), 1, GL_FALSE, &transform[0][0]);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_CUBE_MAP, skybox);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glBindVertexArray(0);
+		//glUseProgram(0);
+		//glDepthFunc(GL_LESS);
+
+
+		glUseProgram(shaderprogram2);
 		glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "model"), 1, GL_FALSE, (float*)&model);
+		glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "view"), 1, GL_FALSE, (float*)&view);
+		glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "projection"), 1, GL_FALSE, (float*)&projection);
+		glBindVertexArray(quadVAO);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, tex);	// Use the color attachment texture as the texture of the quad plane
+		glBindTexture(GL_TEXTURE_2D, tex);	
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 		glUseProgram(0);
 
 		glDepthFunc(GL_LEQUAL);
-		glBindVertexArray(sb_vao);
 		glUseProgram(glsb.shaderprogram);
-		glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "projection"), 1, GL_FALSE, (float*)&projection);
-		glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "view"), 1, GL_FALSE, (float*)&mat4(mat3(view)));
+		mat4 sview = mat4(mat3(view));
+		glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "view"), 1, GL_FALSE, (float*)&sview);
 		glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "model"), 1, GL_FALSE, (float*)&model);
-		glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "transform"), 1, GL_FALSE, &transform[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "projection"), 1, GL_FALSE, (float*)&projection);
+		glBindVertexArray(sb_vao);
 		glActiveTexture(GL_TEXTURE0);
+		//glUniform1i(glGetUniformLocation(glsb.shaderprogram, "texSkyBox"), 0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, skybox);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 		glBindVertexArray(0);
 		glUseProgram(0);
 		glDepthFunc(GL_LESS);
-
 
 		glfwPollEvents();
 		glfwSwapBuffers(window);
