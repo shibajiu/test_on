@@ -387,7 +387,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	//glNamedFramebufferTexture
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex1, 0);
 	/*glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);*/
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -524,7 +524,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "model"), 1, GL_FALSE, (float*)&model);
 		glBindVertexArray(f1_vao);
 		glBindTexture(GL_TEXTURE_2D, f1_tex);
+		glActiveTexture(GL_TEXTURE0);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindVertexArray(0);
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
 		glUseProgram(0);
@@ -540,18 +542,24 @@ int _tmain(int argc, _TCHAR* argv[])
 		glUniformMatrix4fv(glGetUniformLocation(gldp.shaderprogram, "projection"), 1, GL_FALSE, (float*)&projection);
 		glUniformMatrix4fv(glGetUniformLocation(gldp.shaderprogram, "view"), 1, GL_FALSE, (float*)&mat4(mat3(view1)));
 		glUniformMatrix4fv(glGetUniformLocation(gldp.shaderprogram, "model"), 1, GL_FALSE, (float*)&model);*/
-		glUseProgram(gl.shaderprogram);
+		/*glUseProgram(gl.shaderprogram);
 		glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "projection"), 1, GL_FALSE, (float*)&projection);
 		glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "view"), 1, GL_FALSE, (float*)&mat4(mat3(view)));
 		glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "model"), 1, GL_FALSE, (float*)&model);
 
-		glActiveTexture(GL_TEXTURE0);
-	/*	glBindTexture(GL_TEXTURE_2D, f1_tex);
+		glBindTexture(GL_TEXTURE_2D, f1_tex);
 		glBindVertexArray(quadVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 6);*/
-		glBindVertexArray(f1_vao);
-		glBindTexture(GL_TEXTURE_2D, f1_tex);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glUseProgram(shaderprogram2);
+		/*glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "model"), 1, GL_FALSE, (float*)&model);
+		glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "view"), 1, GL_FALSE, (float*)&view1);
+		glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "projection"), 1, GL_FALSE, (float*)&projection);*/
+		glBindVertexArray(quadVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	
+		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindVertexArray(0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glUseProgram(0);
@@ -569,8 +577,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "projection"), 1, GL_FALSE, (float*)&projection);
 		glBindVertexArray(quadVAO);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, tex);	
+		glBindTexture(GL_TEXTURE_2D, tex1);	
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindVertexArray(0);
 		glUseProgram(0);
 
