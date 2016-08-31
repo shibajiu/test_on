@@ -7,6 +7,7 @@
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void outputpixel(GLubyte*);
 
 class GL{
 public:
@@ -247,7 +248,7 @@ static const char* fragshadersource2 =
 "in vec2 Texcoords;\n"
 "out vec4 color;\n"
 "void main(){\n"
-"color=vec4(1,1,1,1);\n"
+"color=vec4(1,0.5,0.4,1);\n"
 "}"
 ;
 
@@ -316,6 +317,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+	static GLubyte* pixels = new GLubyte[3 * 20 * 10];
 
 
 	GLuint sb_vao, sb_vbo;
@@ -431,6 +433,9 @@ int _tmain(int argc, _TCHAR* argv[])
 			cameraPos = vec3(0, 0, 7);
 			break;
 
+		case GLFW_KEY_O:
+			outputpixel(pixels);
+			break;
 		default:
 			break;
 
@@ -476,13 +481,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	);
 
 	GLuint f1_tex = loadTexture("E:\\tf.jpg");
-
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	GL gl,glo,gldp;
 	gl.creatProgram(const_cast<char*>(vertexshadersource0), const_cast<char*>(fragshadersource0));
 	glo.creatProgram(const_cast<char*>(vertexshadersource0), const_cast<char*>(fragshadersource0));
 	gldp.creatProgram(const_cast<char*>(vertexshadersource2), const_cast<char*>(fragshadersource2));
 	
-	GLubyte* pixels = (GLubyte*)malloc(512);
 
 	GLuint shaderprogram = gl.shaderprogram,shaderprogram2=glo.shaderprogram;
 	//glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
@@ -552,8 +556,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		glBindVertexArray(0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glUseProgram(0);
+		//work on so far
 		glBindTexture(GL_TEXTURE_2D, tex1);
-		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, (void*)pixels);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		//display framebuffer
@@ -613,4 +618,11 @@ GLuint loadTexture(char* path){
 	glBindTexture(GL_TEXTURE_2D, 0);
 	SOIL_free_image_data(image);
 	return texID;
+}
+
+void outputpixel(GLubyte* _pixel){
+	for (int i = 0; i < 3 * 20 * 10; i++){
+		cout << (GLuint)*(_pixel + i) << "\t";
+	}
+	cout << endl;
 }
