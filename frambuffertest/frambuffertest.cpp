@@ -537,23 +537,12 @@ int _tmain(int argc, _TCHAR* argv[])
 		//framebuffer number 2
 		glViewport(0, 0, 20, 10);
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo1);
-		/*glUseProgram(gldp.shaderprogram);
+		glUseProgram(gldp.shaderprogram);
 		glUniform4f(glGetUniformLocation(gldp.shaderprogram, "twopos"), 0.2, 0.2, 0.4, 0.4);
 		glUniformMatrix4fv(glGetUniformLocation(gldp.shaderprogram, "projection"), 1, GL_FALSE, (float*)&projection);
-		glUniformMatrix4fv(glGetUniformLocation(gldp.shaderprogram, "view"), 1, GL_FALSE, (float*)&mat4(mat3(view1)));
-		glUniformMatrix4fv(glGetUniformLocation(gldp.shaderprogram, "model"), 1, GL_FALSE, (float*)&model);*/
-		/*glUseProgram(gl.shaderprogram);
-		glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "projection"), 1, GL_FALSE, (float*)&projection);
-		glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "view"), 1, GL_FALSE, (float*)&mat4(mat3(view)));
-		glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "model"), 1, GL_FALSE, (float*)&model);
+		glUniformMatrix4fv(glGetUniformLocation(gldp.shaderprogram, "view"), 1, GL_FALSE, (float*)&view1);
+		glUniformMatrix4fv(glGetUniformLocation(gldp.shaderprogram, "model"), 1, GL_FALSE, (float*)&model);
 
-		glBindTexture(GL_TEXTURE_2D, f1_tex);
-		glBindVertexArray(quadVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 6);*/
-		glUseProgram(shaderprogram2);
-		/*glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "model"), 1, GL_FALSE, (float*)&model);
-		glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "view"), 1, GL_FALSE, (float*)&view1);
-		glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "projection"), 1, GL_FALSE, (float*)&projection);*/
 		glBindVertexArray(quadVAO);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, tex);
@@ -563,9 +552,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		glBindVertexArray(0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glUseProgram(0);
-		/*glBindTexture(GL_TEXTURE_2D, tex1);
+		glBindTexture(GL_TEXTURE_2D, tex1);
 		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-		glBindTexture(GL_TEXTURE_2D, 0);*/
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 		//display framebuffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
