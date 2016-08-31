@@ -162,7 +162,7 @@ GLfloat skyboxVertices[] = {
 };
 
 static const char* vertexshadersource0 =
-"#version 330 core\n"
+"#version 440 core\n"
 "layout(location = 0) in vec3 vertexPosition_modelspace;\n"
 "layout(location = 1) in vec2 texCoords;\n"
 
@@ -179,7 +179,7 @@ static const char* vertexshadersource0 =
 ;
 
 static const char* fragshadersource0 =
-"#version 330 core\n"
+"#version 440 core\n"
 "out vec4 color;\n"
 
 "in vec2 Texcoords;\n"
@@ -188,13 +188,14 @@ static const char* fragshadersource0 =
 
 "void main(){\n"
 "color = texture(Texture,Texcoords);\n"
-"    float average = (color.r + color.g + color.b) / 3.0;\n"
+"float average = (color.r + color.g + color.b) / 3.0;\n"
 "color = vec4(average, average, average, 1.0); \n"
+//"color=vec4(1);\n"
 "}"
 ;
 
 static const char* vertexshadersource1 =
-"#version 330 core\n"
+"#version 440 core\n"
 "layout(location = 0) in vec3 vertexPosition_modelspace;\n"
 
 "uniform mat4 projection;\n"
@@ -212,7 +213,7 @@ static const char* vertexshadersource1 =
 ;
 
 static const char* fragshadersource1 =
-"#version 330 core\n"
+"#version 440 core\n"
 "out vec4 color;\n"
 
 "in vec3 Texcoords;\n"
@@ -223,6 +224,34 @@ static const char* fragshadersource1 =
 "color = texture(Texture,Texcoords); \n"
 "}"
 ;
+
+static const char* vertexshadersource2 =
+"#version 440 core\n"
+"layout(location = 0) in vec2 vertexPosition_modelspace;\n"
+"layout(location = 1) in vec2 texCoords;\n"
+"out vec2 Texcoords;\n"
+"uniform mat4 projection;\n"
+"uniform mat4 view;\n"
+"uniform mat4 model;\n"
+
+"void main(){\n"
+"gl_Position=projection * view * model *vec4(vertexPosition_modelspace,0.0,1.0);\n"
+"Texcoords=texCoords;\n"
+"}"
+;
+
+static const char* fragshadersource2 =
+"#version 440 core\n"
+"uniform sampler2D Texture;\n"
+"uniform vec4 twopos;\n"
+"in vec2 Texcoords;\n"
+"out vec4 color;\n"
+"void main(){\n"
+"color=vec4(1,1,1,1);\n"
+"}"
+;
+
+
 static map<int, bool >keystatus;
 static GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
 static GLfloat lastFrame = 0.0f;  	// Time of last frame
@@ -266,6 +295,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	auto window = glfwCreateWindow(800, 600, "frambuffer", NULL, NULL);
 	glfwMakeContextCurrent(window);
 	glewInit();
+	glfwSetErrorCallback(
+		[](int error, const char * desc){
+		fprintf_s(stderr, "ERROR:%s\n", desc);
+	}
+	);
 
 	GLuint skybox = SOIL_load_OGL_cubemap(
 		"E:/hit/frambuffertest/frambuffertest/mp_orbital/orbital-element_ft.tga",
@@ -331,7 +365,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex, 0);
+	//glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
+	glFramebufferTextureEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex, 0);
 
 	glGenRenderbuffers(1, &rbo);
 	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
@@ -340,6 +375,35 @@ int _tmain(int argc, _TCHAR* argv[])
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//new
+	GLuint fbo1, tex1;
+	glGenFramebuffers(1, &fbo1);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo1);
+	glGenTextures(1, &tex1);
+	glBindTexture(GL_TEXTURE_2D, tex1);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 20, 10, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	//glNamedFramebufferTexture
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex, 0);
+	/*glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);*/
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	GLfloat point[] = { 0, 0, 0, 2, 1, 0 };
+	GLuint vaop, vbop;
+	glGenVertexArrays(1, &vaop);
+	glGenBuffers(1, &vbop);
+	glBindVertexArray(vaop);
+	glBindBuffer(GL_ARRAY_BUFFER, vbop);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(point), point, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
 
 	keystatus[GLFW_KEY_W] = false;
 	keystatus[GLFW_KEY_A] = false;
@@ -413,11 +477,12 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	GLuint f1_tex = loadTexture("E:\\tf.jpg");
 
-	GL gl,glo;
+	GL gl,glo,gldp;
 	gl.creatProgram(const_cast<char*>(vertexshadersource0), const_cast<char*>(fragshadersource0));
 	glo.creatProgram(const_cast<char*>(vertexshadersource0), const_cast<char*>(fragshadersource0));
+	gldp.creatProgram(const_cast<char*>(vertexshadersource2), const_cast<char*>(fragshadersource2));
 	
-	glViewport(0, 0, 800, 600);
+	GLubyte* pixels = (GLubyte*)malloc(512);
 
 	GLuint shaderprogram = gl.shaderprogram,shaderprogram2=glo.shaderprogram;
 	//glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
@@ -432,6 +497,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	cout << rand() % 50 << endl;
 
 	//system("pause");
+	mat4 view1 = lookAtRH(vec3(0, 0, 3), vec3(0, 0, 0), vec3(0, 1, 0));
 
 		glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(window)){
@@ -446,6 +512,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		mat4 transform = mat4(1);
 		model = mat4(1);
 
+		//cube frambuffer
+		glViewport(0, 0, 800, 600);
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 		glClearColor(1, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -460,45 +528,42 @@ int _tmain(int argc, _TCHAR* argv[])
 		glBindVertexArray(0);
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
 		glUseProgram(0);
-		//glEnable(GL_DEPTH_TEST);
-
-	
-
-		//glDisable(GL_DEPTH_TEST);
-		//glClearColor(1, 0, 0, 1);
-		//glEnable(GL_DEPTH_TEST);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				
 		glClearColor(1.0f, 1.0f, .0f, 1.0f); // Set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		model = translate(model,vec3(0,0,-5));
-		
-		//glUseProgram(shaderprogram2);
-		//glBindVertexArray(quadVAO);
-		//glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "projection"), 1, GL_FALSE, (float*)&projection);
-		//glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "view"), 1, GL_FALSE, (float*)&view);
-		//glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "model"), 1, GL_FALSE, (float*)&model);
-		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, tex);	// Use the color attachment texture as the texture of the quad plane
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
-		//glBindVertexArray(0);
-		//glUseProgram(0);
 
-		//glDepthFunc(GL_LEQUAL);
-		//glBindVertexArray(sb_vao);
-		//glUseProgram(glsb.shaderprogram);
-		//glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "projection"), 1, GL_FALSE, (float*)&projection);
-		//glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "view"), 1, GL_FALSE, (float*)&mat4(mat3(view)));
-		//glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "model"), 1, GL_FALSE, (float*)&model);
-		//glUniformMatrix4fv(glGetUniformLocation(glsb.shaderprogram, "transform"), 1, GL_FALSE, &transform[0][0]);
-		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_CUBE_MAP, skybox);
-		//glDrawArrays(GL_TRIANGLES, 0, 36);
-		//glBindVertexArray(0);
-		//glUseProgram(0);
-		//glDepthFunc(GL_LESS);
+		//framebuffer number 2
+		glViewport(0, 0, 20, 10);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo1);
+		/*glUseProgram(gldp.shaderprogram);
+		glUniform4f(glGetUniformLocation(gldp.shaderprogram, "twopos"), 0.2, 0.2, 0.4, 0.4);
+		glUniformMatrix4fv(glGetUniformLocation(gldp.shaderprogram, "projection"), 1, GL_FALSE, (float*)&projection);
+		glUniformMatrix4fv(glGetUniformLocation(gldp.shaderprogram, "view"), 1, GL_FALSE, (float*)&mat4(mat3(view1)));
+		glUniformMatrix4fv(glGetUniformLocation(gldp.shaderprogram, "model"), 1, GL_FALSE, (float*)&model);*/
+		glUseProgram(gl.shaderprogram);
+		glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "projection"), 1, GL_FALSE, (float*)&projection);
+		glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "view"), 1, GL_FALSE, (float*)&mat4(mat3(view)));
+		glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "model"), 1, GL_FALSE, (float*)&model);
 
+		glActiveTexture(GL_TEXTURE0);
+	/*	glBindTexture(GL_TEXTURE_2D, f1_tex);
+		glBindVertexArray(quadVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 6);*/
+		glBindVertexArray(f1_vao);
+		glBindTexture(GL_TEXTURE_2D, f1_tex);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glUseProgram(0);
+		/*glBindTexture(GL_TEXTURE_2D, tex1);
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+		glBindTexture(GL_TEXTURE_2D, 0);*/
 
+		//display framebuffer
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glViewport(0, 0, 800, 600);
 		glUseProgram(shaderprogram2);
+		model = translate(model, vec3(0, 0, -5));
 		glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "model"), 1, GL_FALSE, (float*)&model);
 		glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "view"), 1, GL_FALSE, (float*)&view);
 		glUniformMatrix4fv(glGetUniformLocation(shaderprogram2, "projection"), 1, GL_FALSE, (float*)&projection);
@@ -509,6 +574,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		glBindVertexArray(0);
 		glUseProgram(0);
 
+		//skybox
 		glDepthFunc(GL_LEQUAL);
 		glUseProgram(glsb.shaderprogram);
 		mat4 sview = mat4(mat3(view));
@@ -524,6 +590,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		glBindVertexArray(0);
 		glUseProgram(0);
 		glDepthFunc(GL_LESS);
+
+
+		
 
 		glfwPollEvents();
 		glfwSwapBuffers(window);
