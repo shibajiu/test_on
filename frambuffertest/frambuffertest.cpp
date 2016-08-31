@@ -236,7 +236,8 @@ static const char* vertexshadersource2 =
 "uniform mat4 model;\n"
 
 "void main(){\n"
-"gl_Position=projection * view * model *vec4(vertexPosition_modelspace,0.0,1.0);\n"
+"gl_Position=vec4(vertexPosition_modelspace,0.0,1.0);\n"
+//"gl_Position=projection * view * model *vec4(vertexPosition_modelspace,0.0,1.0);\n"
 "Texcoords=texCoords;\n"
 "}"
 ;
@@ -600,6 +601,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		glfwPollEvents();
 		glfwSwapBuffers(window);
 	}
+	delete[] pixels;
 	return 0;
 }
 
