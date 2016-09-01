@@ -321,7 +321,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	static GLubyte* pixels = new GLubyte[3 * 20 * 10];
-	static GLfloat* pixeldp = new GLfloat[12 * 20 * 10];
+	static GLfloat* pixeldp = new GLfloat[4 * 20 * 10];
 
 
 	GLuint sb_vao, sb_vbo;
@@ -395,7 +395,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//depth texture
 	glGenTextures(1, &dptex);
 	glBindTexture(GL_TEXTURE_2D, dptex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 20, 10, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, 20, 10, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -647,7 +647,7 @@ void outputpixel(GLubyte* _pixel){
 }
 
 void outputpixel(GLfloat* _pixel){
-	for (int i = 0; i < 3 * 20 * 10; i++){
+	for (int i = 0; i <  20 * 10; i++){
 		cout << (GLfloat)*(_pixel + i) << "\t";
 	}
 	cout << endl;
