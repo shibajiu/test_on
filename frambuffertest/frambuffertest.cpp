@@ -8,6 +8,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void outputpixel(GLubyte*);
+void outputpixel(GLfloat*);
 
 class GL{
 public:
@@ -236,8 +237,8 @@ static const char* vertexshadersource2 =
 "uniform mat4 model;\n"
 
 "void main(){\n"
-"gl_Position=vec4(vertexPosition_modelspace,0.0,1.0);\n"
-//"gl_Position=projection * view * model *vec4(vertexPosition_modelspace,0.0,1.0);\n"
+//"gl_Position=vec4(vertexPosition_modelspace,0.0,1.0);\n"
+"gl_Position=projection * view * model *vec4(vertexPosition_modelspace,0.0,1.0);\n"
 "Texcoords=texCoords;\n"
 "}"
 ;
@@ -250,6 +251,7 @@ static const char* fragshadersource2 =
 "out vec4 color;\n"
 "void main(){\n"
 "color=vec4(1,0.5,0.4,1);\n"
+//"gl_FragDepth=0.3;\n"
 "}"
 ;
 
@@ -319,6 +321,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	static GLubyte* pixels = new GLubyte[3 * 20 * 10];
+	static GLfloat* pixeldp = new GLfloat[12 * 20 * 10];
 
 
 	GLuint sb_vao, sb_vbo;
@@ -380,7 +383,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//new
-	GLuint fbo1, tex1;
+	GLuint fbo1, tex1, dptex;
 	glGenFramebuffers(1, &fbo1);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo1);
 	glGenTextures(1, &tex1);
@@ -389,10 +392,18 @@ int _tmain(int argc, _TCHAR* argv[])
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
+	//depth texture
+	glGenTextures(1, &dptex);
+	glBindTexture(GL_TEXTURE_2D, dptex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 20, 10, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, dptex, 0);
 	//glNamedFramebufferTexture
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex1, 0);
-	/*glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);*/
+	//glDrawBuffer(GL_NONE);
+	//glReadBuffer(GL_NONE);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -436,6 +447,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 		case GLFW_KEY_O:
 			outputpixel(pixels);
+			break;
+		case GLFW_KEY_P:
+			outputpixel(pixeldp);
 			break;
 		default:
 			break;
@@ -503,7 +517,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	//system("pause");
 	mat4 view1 = lookAtRH(vec3(0, 0, 3), vec3(0, 0, 0), vec3(0, 1, 0));
-
+	glClearDepth(1.f);
 		glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(window)){
 		GLfloat currentFrame = glfwGetTime();
@@ -560,6 +574,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		//work on so far
 		glBindTexture(GL_TEXTURE_2D, tex1);
 		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, (void*)pixels);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindTexture(GL_TEXTURE_2D, dptex);
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_FLOAT, (void*)pixeldp);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		//display framebuffer
@@ -625,6 +642,13 @@ GLuint loadTexture(char* path){
 void outputpixel(GLubyte* _pixel){
 	for (int i = 0; i < 3 * 20 * 10; i++){
 		cout << (GLuint)*(_pixel + i) << "\t";
+	}
+	cout << endl;
+}
+
+void outputpixel(GLfloat* _pixel){
+	for (int i = 0; i < 3 * 20 * 10; i++){
+		cout << (GLfloat)*(_pixel + i) << "\t";
 	}
 	cout << endl;
 }
